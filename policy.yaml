@@ -2,7 +2,7 @@
 # review: at or above -> human review queue. block: at or above -> rejected outright.
 # Thresholds were picked on the validation split (bench/eval_text.py, bench/eval_images.py),
 # never on the test sets they are reported on.
-version: 3
+version: 4
 default:
   obfuscation_escalates: true
   obfuscation_floor: 0.05
@@ -27,11 +27,11 @@ tenants:
   adult-platform:
     obfuscation_escalates: false
     rules:
-      sexual:        { review: 0.99, block: null }
-      nsfw_exposed:  { review: 0.99, block: null }
-      minor_sexual:  { review: 0.99, block: null }   # ignored: tenants cannot loosen this label
+      sexual:        { review: null, block: null }
+      nsfw_exposed:  { review: null, block: null }
+      minor_sexual:  { review: null, block: null }   # ignored: tenants cannot loosen this label
   # A merch shop that holds licenses for the brands it renders.
   licensed-merch:
     rules:
-      trademark: { review: 0.99, block: null }
-      logo:      { review: 0.99, block: null }
+      trademark: { review: null, block: null }
+      logo:      { review: null, block: null }

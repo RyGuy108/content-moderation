@@ -20,7 +20,7 @@ NEVER_ALLOWED = {"minor_sexual", "csam_risk", "real_person_sexual"}
 
 @dataclass
 class Rule:
-    review: float          # score >= review -> at least REVIEW
+    review: float | None   # score >= review -> at least REVIEW (None: label switched off for this tenant)
     block: float | None    # score >= block  -> BLOCK (None: never auto-blocks, review only)
 
 
@@ -77,7 +77,7 @@ def decide(policy: Policy, scores: dict[str, float], flags: set[str] | None = No
         lvl = ALLOW
         if rule.block is not None and sc >= rule.block:
             lvl = BLOCK
-        elif sc >= rule.review:
+        elif rule.review is not None and sc >= rule.review:
             lvl = REVIEW
         if lvl != ALLOW:
             reasons.append({"label": label, "score": round(sc, 4), "action": lvl,

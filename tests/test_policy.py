@@ -22,6 +22,7 @@ def test_derived_labels():
 def test_tenant_overrides_and_floor():
     adult = Policy.load(POLICY, "adult-platform")
     assert decide(adult, {"sexual": 0.95}).action == "allow"
+    assert decide(adult, {"sexual": 0.9999, "nsfw_exposed": 0.999}).action == "allow"   # switched off, not just a high bar
     # tenants cannot loosen minor_sexual even if their config tries to
     assert decide(adult, {"minor_sexual": 0.9}).action == "block"
     assert decide(adult, {"real_person": 0.9, "sexual": 0.9}).action == "block"
