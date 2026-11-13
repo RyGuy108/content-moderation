@@ -1,0 +1,24 @@
+__pycache__/
+*.pyc
+.venv/
+models/*.dat
+models/*.onnx
+data/gen/raw/
+reviewer/node_modules/
+reviewer/.next/
+.env
+data/raw/
+models/*.caffemodel
+models/*.prototxt
+var/
+models/sface.onnx
+# Generated eval images live outside git (see README); keep the labels, marks and the paid-render ledger.
+data/gen/**
+!data/gen/
+!data/gen/ledger.jsonl
+!data/gen/logos/
+!data/gen/logos/labels.json
+!data/gen/logos/marks/
+!data/gen/logos/marks/*.png
+dump.rdb
+.pytest_cache/

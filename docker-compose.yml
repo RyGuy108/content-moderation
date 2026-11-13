@@ -1,0 +1,37 @@
+# docker compose up --build
+#   API      http://localhost:8000   (pre-check, post-check, enrollment, review queue)
+#   Reviewer http://localhost:3000   (human review console)
+x-env: &env
+  DATABASE_URL: postgresql://postgres:postgres@postgres:5432/modpipe
+  REDIS_URL: redis://redis:6379/0
+  MEDIA_DIR: /var/modpipe/media
+  WEBHOOK_SECRET: ${WEBHOOK_SECRET:-dev-secret}
+  MAGIC_HOUR_API_KEY: ${MAGIC_HOUR_API_KEY:-}
+
+services:
+  postgres:
+    image: postgres:16
+    environment: { POSTGRES_PASSWORD: postgres, POSTGRES_DB: modpipe }
+    healthcheck: { test: ["CMD", "pg_isready", "-U", "postgres"], interval: 2s, retries: 30 }
+    volumes: [pgdata:/var/lib/postgresql/data]
+  redis:
+    image: redis:7
+  api:
+    build: .
+    environment: *env
+    ports: ["8000:8000"]
+    volumes: [media:/var/modpipe/media]
+    depends_on: { postgres: { condition: service_healthy }, redis: { condition: service_started } }
+  worker:
+    build: .
+    command: python -m modpipe.worker
+    environment: { <<: *env, WORKERS: "2" }
+    volumes: [media:/var/modpipe/media]
+    depends_on: [api]
+    deploy: { replicas: 2 }
+  reviewer:
+    build: { context: reviewer, args: { NEXT_PUBLIC_MODPIPE_API: "http://localhost:8000" } }
+    ports: ["3000:3000"]
+    depends_on: [api]
+
+volumes: { pgdata: {}, media: {} }

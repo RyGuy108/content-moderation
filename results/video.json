@@ -1,0 +1,65 @@
+{
+ "clips": 16,
+ "strategies": {
+  "all": {
+   "recall_by_segment_s": {
+    "0.25": 1.0,
+    "0.5": 1.0,
+    "1.0": 1.0
+   },
+   "n_by_segment": {
+    "0.25": 15,
+    "0.5": 13,
+    "1.0": 15
+   },
+   "false_alarms_on_clean": "3/16",
+   "mean_frames_checked": 121.0,
+   "mean_ms_per_clip": 8551.4
+  },
+  "1fps": {
+   "recall_by_segment_s": {
+    "0.25": 0.2,
+    "0.5": 0.462,
+    "1.0": 1.0
+   },
+   "n_by_segment": {
+    "0.25": 15,
+    "0.5": 13,
+    "1.0": 15
+   },
+   "false_alarms_on_clean": "2/16",
+   "mean_frames_checked": 6.0,
+   "mean_ms_per_clip": 975.9
+  },
+  "2fps": {
+   "recall_by_segment_s": {
+    "0.25": 0.4,
+    "0.5": 1.0,
+    "1.0": 1.0
+   },
+   "n_by_segment": {
+    "0.25": 15,
+    "0.5": 13,
+    "1.0": 15
+   },
+   "false_alarms_on_clean": "2/16",
+   "mean_frames_checked": 11.0,
+   "mean_ms_per_clip": 1227.2
+  },
+  "modpipe": {
+   "recall_by_segment_s": {
+    "0.25": 0.933,
+    "0.5": 1.0,
+    "1.0": 1.0
+   },
+   "n_by_segment": {
+    "0.25": 15,
+    "0.5": 13,
+    "1.0": 15
+   },
+   "false_alarms_on_clean": "1/16",
+   "mean_frames_checked": 4.9,
+   "mean_ms_per_clip": 804.8
+  }
+ }
+}

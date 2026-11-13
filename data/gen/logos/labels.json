@@ -1,0 +1,740 @@
+{
+ "registered": [
+  "volta",
+  "kestrel",
+  "nordwind",
+  "pipfern",
+  "halcyon",
+  "brightloop",
+  "tamarack",
+  "orbitex"
+ ],
+ "unregistered": [
+  "vexa",
+  "kettle",
+  "nordic",
+  "fernhill"
+ ],
+ "images": [
+  {
+   "path": "data/gen/logos/images/000_clean.jpg",
+   "logo": null,
+   "registered": false,
+   "scene": "logoscene_00_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/001_pipfern.jpg",
+   "logo": "pipfern",
+   "registered": true,
+   "scene": "logoscene_00_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/002_halcyon.jpg",
+   "logo": "halcyon",
+   "registered": true,
+   "scene": "logoscene_00_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/003_fernhill.jpg",
+   "logo": "fernhill",
+   "registered": false,
+   "scene": "logoscene_00_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/004_clean.jpg",
+   "logo": null,
+   "registered": false,
+   "scene": "logoscene_00_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/005_halcyon.jpg",
+   "logo": "halcyon",
+   "registered": true,
+   "scene": "logoscene_00_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/006_orbitex.jpg",
+   "logo": "orbitex",
+   "registered": true,
+   "scene": "logoscene_00_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/007_fernhill.jpg",
+   "logo": "fernhill",
+   "registered": false,
+   "scene": "logoscene_00_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/008_clean.jpg",
+   "logo": null,
+   "registered": false,
+   "scene": "logoscene_01_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/009_pipfern.jpg",
+   "logo": "pipfern",
+   "registered": true,
+   "scene": "logoscene_01_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/010_nordwind.jpg",
+   "logo": "nordwind",
+   "registered": true,
+   "scene": "logoscene_01_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/011_kettle.jpg",
+   "logo": "kettle",
+   "registered": false,
+   "scene": "logoscene_01_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/012_clean.jpg",
+   "logo": null,
+   "registered": false,
+   "scene": "logoscene_01_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/013_halcyon.jpg",
+   "logo": "halcyon",
+   "registered": true,
+   "scene": "logoscene_01_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/014_kestrel.jpg",
+   "logo": "kestrel",
+   "registered": true,
+   "scene": "logoscene_01_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/015_nordic.jpg",
+   "logo": "nordic",
+   "registered": false,
+   "scene": "logoscene_01_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/016_clean.jpg",
+   "logo": null,
+   "registered": false,
+   "scene": "logoscene_02_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/017_volta.jpg",
+   "logo": "volta",
+   "registered": true,
+   "scene": "logoscene_02_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/018_halcyon.jpg",
+   "logo": "halcyon",
+   "registered": true,
+   "scene": "logoscene_02_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/019_fernhill.jpg",
+   "logo": "fernhill",
+   "registered": false,
+   "scene": "logoscene_02_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/020_clean.jpg",
+   "logo": null,
+   "registered": false,
+   "scene": "logoscene_02_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/021_volta.jpg",
+   "logo": "volta",
+   "registered": true,
+   "scene": "logoscene_02_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/022_halcyon.jpg",
+   "logo": "halcyon",
+   "registered": true,
+   "scene": "logoscene_02_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/023_vexa.jpg",
+   "logo": "vexa",
+   "registered": false,
+   "scene": "logoscene_02_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/024_clean.jpg",
+   "logo": null,
+   "registered": false,
+   "scene": "logoscene_03_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/025_kestrel.jpg",
+   "logo": "kestrel",
+   "registered": true,
+   "scene": "logoscene_03_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/026_halcyon.jpg",
+   "logo": "halcyon",
+   "registered": true,
+   "scene": "logoscene_03_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/027_kettle.jpg",
+   "logo": "kettle",
+   "registered": false,
+   "scene": "logoscene_03_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/028_clean.jpg",
+   "logo": null,
+   "registered": false,
+   "scene": "logoscene_03_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/029_tamarack.jpg",
+   "logo": "tamarack",
+   "registered": true,
+   "scene": "logoscene_03_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/030_kestrel.jpg",
+   "logo": "kestrel",
+   "registered": true,
+   "scene": "logoscene_03_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/031_vexa.jpg",
+   "logo": "vexa",
+   "registered": false,
+   "scene": "logoscene_03_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/032_clean.jpg",
+   "logo": null,
+   "registered": false,
+   "scene": "logoscene_04_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/033_nordwind.jpg",
+   "logo": "nordwind",
+   "registered": true,
+   "scene": "logoscene_04_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/034_halcyon.jpg",
+   "logo": "halcyon",
+   "registered": true,
+   "scene": "logoscene_04_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/035_kettle.jpg",
+   "logo": "kettle",
+   "registered": false,
+   "scene": "logoscene_04_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/036_clean.jpg",
+   "logo": null,
+   "registered": false,
+   "scene": "logoscene_04_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/037_volta.jpg",
+   "logo": "volta",
+   "registered": true,
+   "scene": "logoscene_04_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/038_pipfern.jpg",
+   "logo": "pipfern",
+   "registered": true,
+   "scene": "logoscene_04_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/039_fernhill.jpg",
+   "logo": "fernhill",
+   "registered": false,
+   "scene": "logoscene_04_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/040_clean.jpg",
+   "logo": null,
+   "registered": false,
+   "scene": "logoscene_05_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/041_pipfern.jpg",
+   "logo": "pipfern",
+   "registered": true,
+   "scene": "logoscene_05_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/042_volta.jpg",
+   "logo": "volta",
+   "registered": true,
+   "scene": "logoscene_05_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/043_kettle.jpg",
+   "logo": "kettle",
+   "registered": false,
+   "scene": "logoscene_05_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/044_clean.jpg",
+   "logo": null,
+   "registered": false,
+   "scene": "logoscene_05_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/045_pipfern.jpg",
+   "logo": "pipfern",
+   "registered": true,
+   "scene": "logoscene_05_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/046_volta.jpg",
+   "logo": "volta",
+   "registered": true,
+   "scene": "logoscene_05_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/047_nordic.jpg",
+   "logo": "nordic",
+   "registered": false,
+   "scene": "logoscene_05_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/048_clean.jpg",
+   "logo": null,
+   "registered": false,
+   "scene": "logoscene_06_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/049_brightloop.jpg",
+   "logo": "brightloop",
+   "registered": true,
+   "scene": "logoscene_06_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/050_kestrel.jpg",
+   "logo": "kestrel",
+   "registered": true,
+   "scene": "logoscene_06_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/051_fernhill.jpg",
+   "logo": "fernhill",
+   "registered": false,
+   "scene": "logoscene_06_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/052_clean.jpg",
+   "logo": null,
+   "registered": false,
+   "scene": "logoscene_06_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/053_kestrel.jpg",
+   "logo": "kestrel",
+   "registered": true,
+   "scene": "logoscene_06_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/054_orbitex.jpg",
+   "logo": "orbitex",
+   "registered": true,
+   "scene": "logoscene_06_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/055_vexa.jpg",
+   "logo": "vexa",
+   "registered": false,
+   "scene": "logoscene_06_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/056_clean.jpg",
+   "logo": null,
+   "registered": false,
+   "scene": "logoscene_07_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/057_kestrel.jpg",
+   "logo": "kestrel",
+   "registered": true,
+   "scene": "logoscene_07_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/058_halcyon.jpg",
+   "logo": "halcyon",
+   "registered": true,
+   "scene": "logoscene_07_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/059_vexa.jpg",
+   "logo": "vexa",
+   "registered": false,
+   "scene": "logoscene_07_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/060_clean.jpg",
+   "logo": null,
+   "registered": false,
+   "scene": "logoscene_07_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/061_brightloop.jpg",
+   "logo": "brightloop",
+   "registered": true,
+   "scene": "logoscene_07_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/062_kestrel.jpg",
+   "logo": "kestrel",
+   "registered": true,
+   "scene": "logoscene_07_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/063_nordic.jpg",
+   "logo": "nordic",
+   "registered": false,
+   "scene": "logoscene_07_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/064_clean.jpg",
+   "logo": null,
+   "registered": false,
+   "scene": "logoscene_08_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/065_nordwind.jpg",
+   "logo": "nordwind",
+   "registered": true,
+   "scene": "logoscene_08_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/066_orbitex.jpg",
+   "logo": "orbitex",
+   "registered": true,
+   "scene": "logoscene_08_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/067_vexa.jpg",
+   "logo": "vexa",
+   "registered": false,
+   "scene": "logoscene_08_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/068_clean.jpg",
+   "logo": null,
+   "registered": false,
+   "scene": "logoscene_08_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/069_pipfern.jpg",
+   "logo": "pipfern",
+   "registered": true,
+   "scene": "logoscene_08_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/070_volta.jpg",
+   "logo": "volta",
+   "registered": true,
+   "scene": "logoscene_08_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/071_kettle.jpg",
+   "logo": "kettle",
+   "registered": false,
+   "scene": "logoscene_08_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/072_clean.jpg",
+   "logo": null,
+   "registered": false,
+   "scene": "logoscene_09_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/073_brightloop.jpg",
+   "logo": "brightloop",
+   "registered": true,
+   "scene": "logoscene_09_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/074_halcyon.jpg",
+   "logo": "halcyon",
+   "registered": true,
+   "scene": "logoscene_09_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/075_fernhill.jpg",
+   "logo": "fernhill",
+   "registered": false,
+   "scene": "logoscene_09_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/076_clean.jpg",
+   "logo": null,
+   "registered": false,
+   "scene": "logoscene_09_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/077_brightloop.jpg",
+   "logo": "brightloop",
+   "registered": true,
+   "scene": "logoscene_09_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/078_orbitex.jpg",
+   "logo": "orbitex",
+   "registered": true,
+   "scene": "logoscene_09_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/079_fernhill.jpg",
+   "logo": "fernhill",
+   "registered": false,
+   "scene": "logoscene_09_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/080_clean.jpg",
+   "logo": null,
+   "registered": false,
+   "scene": "logoscene_10_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/081_pipfern.jpg",
+   "logo": "pipfern",
+   "registered": true,
+   "scene": "logoscene_10_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/082_nordwind.jpg",
+   "logo": "nordwind",
+   "registered": true,
+   "scene": "logoscene_10_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/083_vexa.jpg",
+   "logo": "vexa",
+   "registered": false,
+   "scene": "logoscene_10_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/084_clean.jpg",
+   "logo": null,
+   "registered": false,
+   "scene": "logoscene_10_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/085_volta.jpg",
+   "logo": "volta",
+   "registered": true,
+   "scene": "logoscene_10_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/086_halcyon.jpg",
+   "logo": "halcyon",
+   "registered": true,
+   "scene": "logoscene_10_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/087_kettle.jpg",
+   "logo": "kettle",
+   "registered": false,
+   "scene": "logoscene_10_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/088_clean.jpg",
+   "logo": null,
+   "registered": false,
+   "scene": "logoscene_11_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/089_orbitex.jpg",
+   "logo": "orbitex",
+   "registered": true,
+   "scene": "logoscene_11_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/090_kestrel.jpg",
+   "logo": "kestrel",
+   "registered": true,
+   "scene": "logoscene_11_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/091_fernhill.jpg",
+   "logo": "fernhill",
+   "registered": false,
+   "scene": "logoscene_11_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/092_clean.jpg",
+   "logo": null,
+   "registered": false,
+   "scene": "logoscene_11_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/093_halcyon.jpg",
+   "logo": "halcyon",
+   "registered": true,
+   "scene": "logoscene_11_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/094_volta.jpg",
+   "logo": "volta",
+   "registered": true,
+   "scene": "logoscene_11_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/095_kettle.jpg",
+   "logo": "kettle",
+   "registered": false,
+   "scene": "logoscene_11_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/096_clean.jpg",
+   "logo": null,
+   "registered": false,
+   "scene": "logoscene_12_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/097_kestrel.jpg",
+   "logo": "kestrel",
+   "registered": true,
+   "scene": "logoscene_12_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/098_orbitex.jpg",
+   "logo": "orbitex",
+   "registered": true,
+   "scene": "logoscene_12_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/099_vexa.jpg",
+   "logo": "vexa",
+   "registered": false,
+   "scene": "logoscene_12_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/100_clean.jpg",
+   "logo": null,
+   "registered": false,
+   "scene": "logoscene_12_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/101_orbitex.jpg",
+   "logo": "orbitex",
+   "registered": true,
+   "scene": "logoscene_12_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/102_halcyon.jpg",
+   "logo": "halcyon",
+   "registered": true,
+   "scene": "logoscene_12_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/103_kettle.jpg",
+   "logo": "kettle",
+   "registered": false,
+   "scene": "logoscene_12_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/104_clean.jpg",
+   "logo": null,
+   "registered": false,
+   "scene": "logoscene_13_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/105_nordwind.jpg",
+   "logo": "nordwind",
+   "registered": true,
+   "scene": "logoscene_13_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/106_orbitex.jpg",
+   "logo": "orbitex",
+   "registered": true,
+   "scene": "logoscene_13_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/107_kettle.jpg",
+   "logo": "kettle",
+   "registered": false,
+   "scene": "logoscene_13_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/108_clean.jpg",
+   "logo": null,
+   "registered": false,
+   "scene": "logoscene_13_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/109_halcyon.jpg",
+   "logo": "halcyon",
+   "registered": true,
+   "scene": "logoscene_13_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/110_tamarack.jpg",
+   "logo": "tamarack",
+   "registered": true,
+   "scene": "logoscene_13_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/111_vexa.jpg",
+   "logo": "vexa",
+   "registered": false,
+   "scene": "logoscene_13_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/112_clean.jpg",
+   "logo": null,
+   "registered": false,
+   "scene": "logoscene_14_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/113_kestrel.jpg",
+   "logo": "kestrel",
+   "registered": true,
+   "scene": "logoscene_14_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/114_volta.jpg",
+   "logo": "volta",
+   "registered": true,
+   "scene": "logoscene_14_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/115_nordic.jpg",
+   "logo": "nordic",
+   "registered": false,
+   "scene": "logoscene_14_0.png"
+  },
+  {
+   "path": "data/gen/logos/images/116_clean.jpg",
+   "logo": null,
+   "registered": false,
+   "scene": "logoscene_14_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/117_halcyon.jpg",
+   "logo": "halcyon",
+   "registered": true,
+   "scene": "logoscene_14_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/118_tamarack.jpg",
+   "logo": "tamarack",
+   "registered": true,
+   "scene": "logoscene_14_1.png"
+  },
+  {
+   "path": "data/gen/logos/images/119_fernhill.jpg",
+   "logo": "fernhill",
+   "registered": false,
+   "scene": "logoscene_14_1.png"
+  }
+ ]
+}

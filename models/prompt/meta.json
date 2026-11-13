@@ -1,0 +1,17 @@
+{
+ "labels": [
+  "sexual",
+  "minor_sexual",
+  "gore",
+  "hate",
+  "self_harm",
+  "real_person",
+  "trademark"
+ ],
+ "dim": 48,
+ "hidden": 96,
+ "version": "prompt-1794597499",
+ "train_rows": 14944,
+ "val_rows": 1660,
+ "seconds": 59.9
+}

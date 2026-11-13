@@ -1,0 +1,37 @@
+# Moderation policy. Scores are detector probabilities in [0, 1].
+# review: at or above -> human review queue. block: at or above -> rejected outright.
+# Thresholds were picked on the validation split (bench/eval_text.py, bench/eval_images.py),
+# never on the test sets they are reported on.
+version: 3
+default:
+  obfuscation_escalates: true
+  obfuscation_floor: 0.05
+  rules:
+    # prompt classifier labels
+    sexual:             { review: 0.30, block: 0.70 }
+    minor_sexual:       { review: 0.10, block: 0.40 }
+    csam_risk:          { review: 0.10, block: 0.30 }
+    gore:               { review: 0.30, block: 0.70 }
+    hate:               { review: 0.30, block: 0.70 }
+    self_harm:          { review: 0.30, block: 0.70 }
+    real_person:        { review: 0.40, block: null }    # likeness alone: a human decides
+    real_person_sexual: { review: 0.20, block: 0.40 }
+    trademark:          { review: 0.50, block: null }
+    # image / video detectors
+    nsfw_exposed:       { review: 0.45, block: 0.65 }
+    protected_face:     { review: 0.50, block: 0.95 }    # d <= 0.50 review, d <= 0.41 block (bench/eval_images.py)
+    logo:               { review: 0.09, block: null }    # >= 10 geometric inliers
+
+tenants:
+  # An adult-content platform with age-verified users: nudity allowed, never minors or real people.
+  adult-platform:
+    obfuscation_escalates: false
+    rules:
+      sexual:        { review: 0.99, block: null }
+      nsfw_exposed:  { review: 0.99, block: null }
+      minor_sexual:  { review: 0.99, block: null }   # ignored: tenants cannot loosen this label
+  # A merch shop that holds licenses for the brands it renders.
+  licensed-merch:
+    rules:
+      trademark: { review: 0.99, block: null }
+      logo:      { review: 0.99, block: null }
