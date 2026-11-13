@@ -34,6 +34,7 @@ export type Item = {
   attempts: number;
   lease_until: string;
   claimed_by: string;
+  source: "flagged" | "audit";   // audit = random sample of allowed checks
   media_urls: string[];   // signed, short-lived: /v1/media/<name>?exp=..&sig=..
   check: Check;
 };

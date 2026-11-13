@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import os
+import random
 from pathlib import Path
 
 import numpy as np
@@ -12,6 +13,10 @@ from psycopg.types.json import Jsonb
 from psycopg_pool import ConnectionPool
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/modpipe")
+# Share of allowed checks sent to the review queue anyway, at the lowest priority, so reviewers
+# also see what the detectors missed.
+AUDIT_SAMPLE_RATE = float(os.environ.get("AUDIT_SAMPLE_RATE", "0.01"))
+AUDIT_PRIORITY = 1
 MIGRATIONS = Path(__file__).resolve().parents[1] / "migrations"
 
 # Higher = reviewed first. Anything involving minors jumps the whole queue.
@@ -51,7 +56,7 @@ def priority_for(reasons: list[dict]) -> int:
 
 def insert_check(conn, *, tenant, stage, subject, content_hash, input, status="done", decision=None,
                  policy_version=None, model_versions=None, latency_ms=None, frames=None,
-                 webhook_url=None) -> str:
+                 webhook_url=None, audit_rate: float | None = None) -> str:
     row = conn.execute(
         """INSERT INTO checks (tenant, stage, subject, content_hash, input, status, action, scores, reasons,
                                policy_version, model_versions, latency_ms, frames_checked, webhook_url,
@@ -66,6 +71,8 @@ def insert_check(conn, *, tenant, stage, subject, content_hash, input, status="d
     cid = str(row["id"])
     if decision and decision.action == "review":
         enqueue_review(conn, cid, tenant, decision.reasons)
+    elif decision and decision.action == "allow" and random.random() < (AUDIT_SAMPLE_RATE if audit_rate is None else audit_rate):
+        enqueue_review(conn, cid, tenant, [], source="audit")
     return cid
 
 
@@ -81,6 +88,8 @@ def finish_check(conn, cid: str, decision, latency_ms: float, frames: int | None
              Jsonb(model_versions), policy_version, decision.action, decision.action, cid)).fetchone()
         if decision.action == "review":
             enqueue_review(conn, cid, row["tenant"], decision.reasons)
+        elif decision.action == "allow" and random.random() < AUDIT_SAMPLE_RATE:
+            enqueue_review(conn, cid, row["tenant"], [], source="audit")
     return row
 
 
@@ -88,9 +97,10 @@ def fail_check(conn, cid: str, err: str) -> None:
     conn.execute("UPDATE checks SET status='error', error=%s, finished_at=now() WHERE id=%s", (err[:2000], cid))
 
 
-def enqueue_review(conn, check_id: str, tenant: str, reasons: list[dict]) -> None:
-    conn.execute("""INSERT INTO review_items (check_id, tenant, priority) VALUES (%s,%s,%s)
-                    ON CONFLICT (check_id) DO NOTHING""", (check_id, tenant, priority_for(reasons)))
+def enqueue_review(conn, check_id: str, tenant: str, reasons: list[dict], source: str = "flagged") -> None:
+    prio = AUDIT_PRIORITY if source == "audit" else priority_for(reasons)
+    conn.execute("""INSERT INTO review_items (check_id, tenant, priority, source) VALUES (%s,%s,%s,%s)
+                    ON CONFLICT (check_id) DO NOTHING""", (check_id, tenant, prio, source))
 
 
 # ---- review queue ---------------------------------------------------------------------------

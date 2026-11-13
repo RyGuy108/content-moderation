@@ -146,6 +146,7 @@ export default function ReviewPage() {
           <div className="right card">
             <div className="meta">
               <span className={`pill ${chk.action}`}>{chk.action}</span>
+              {item!.source === "audit" && <span className="pill audit">random audit</span>}
               <span>{chk.stage === "pre" ? "before generation" : "generated output"}</span>
               <span>tenant {chk.tenant}</span>
               <span>priority {item!.priority}</span>

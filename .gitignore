@@ -11,7 +11,6 @@ data/raw/
 models/*.caffemodel
 models/*.prototxt
 var/
-models/sface.onnx
 # Generated eval images live outside git (see README); keep the labels, marks and the paid-render ledger.
 data/gen/**
 !data/gen/
@@ -22,3 +21,5 @@ data/gen/**
 !data/gen/logos/marks/*.png
 dump.rdb
 .pytest_cache/
+models/prompt-*/
+data/prompts/reviewed*.jsonl

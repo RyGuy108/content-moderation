@@ -45,13 +45,16 @@ def augment(text: str, rng: random.Random) -> str:
     return text
 
 
-def main(seed=0, epochs=12, out=ROOT / "models" / "prompt"):
+def main(seed=0, epochs=12, out=ROOT / "models" / "prompt", extra: list[dict] | None = None, extra_repeat: int = 4):
+    """extra: reviewer-labeled rows (modpipe/feedback.py). They go into training only, repeated
+    `extra_repeat` times so a few hundred real examples aren't drowned by ~20k templated ones."""
     torch.manual_seed(seed)
     rng = random.Random(seed)
     rows = load("train")
     rng.shuffle(rows)
     n_val = len(rows) // 10
     val, tr = rows[:n_val], rows[n_val:]
+    tr = tr + [{"text": r["text"], "labels": r["labels"]} for r in (extra or [])] * extra_repeat
     net = PromptNet()
     sparse = torch.optim.SparseAdam(list(net.emb.parameters()), lr=0.02)
     dense = torch.optim.AdamW(net.mlp.parameters(), lr=3e-3, weight_decay=1e-4)
@@ -93,7 +96,8 @@ def main(seed=0, epochs=12, out=ROOT / "models" / "prompt"):
         vp = torch.sigmoid(net(pack(vf)))
     del vp
     json.dump({"labels": LABELS, "dim": 48, "hidden": 96, "version": f"prompt-{int(time.time())}",
-               "train_rows": len(tr), "val_rows": len(val), "seconds": round(time.time() - t0, 1)},
+               "train_rows": len(tr), "val_rows": len(val),
+               "reviewed_rows": len(extra or []), "extra_repeat": extra_repeat if extra else 0, "seconds": round(time.time() - t0, 1)},
               open(out / "meta.json", "w"), indent=1)
     print("saved", out, f"{time.time()-t0:.1f}s")
 

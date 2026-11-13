@@ -1,0 +1,111 @@
+{
+ "traffic_rows": 203,
+ "baseline_retrained": {
+  "model": "prompt-1794613790",
+  "test": {
+   "precision": 0.9272,
+   "recall": 0.955,
+   "fpr": 0.0221
+  },
+  "hard_negatives": {
+   "precision": 0.0,
+   "recall": 1.0,
+   "fpr": 0.1732
+  },
+  "natural_final": {
+   "precision": 0.9429,
+   "recall": 0.7952,
+   "fpr": 0.069
+  }
+ },
+ "runs": [
+  {
+   "audit_rate": 0.25,
+   "decisions": {
+    "allow": 95,
+    "review": 38,
+    "block": 70
+   },
+   "reviewed": {
+    "flagged": 38,
+    "audit": 23
+   },
+   "export": {
+    "resolved_items": 61,
+    "examples": 61,
+    "unsafe": 36,
+    "safe": 25,
+    "skipped_non_text": 0,
+    "dropped_ties": 0,
+    "from_audit": 23
+   },
+   "candidate": {
+    "model": "prompt-1794613858",
+    "test": {
+     "precision": 0.9331,
+     "recall": 0.9533,
+     "fpr": 0.0201
+    },
+    "hard_negatives": {
+     "precision": 0.0,
+     "recall": 1.0,
+     "fpr": 0.1453
+    },
+    "natural_final": {
+     "precision": 0.9437,
+     "recall": 0.8072,
+     "fpr": 0.069
+    }
+   },
+   "gate": {
+    "pass": true,
+    "failures": []
+   }
+  },
+  {
+   "audit_rate": 1.0,
+   "decisions": {
+    "allow": 95,
+    "review": 38,
+    "block": 70
+   },
+   "reviewed": {
+    "flagged": 38,
+    "audit": 95
+   },
+   "export": {
+    "resolved_items": 133,
+    "examples": 133,
+    "unsafe": 47,
+    "safe": 86,
+    "skipped_non_text": 0,
+    "dropped_ties": 0,
+    "from_audit": 95
+   },
+   "candidate": {
+    "model": "prompt-1794613926",
+    "test": {
+     "precision": 0.926,
+     "recall": 0.96,
+     "fpr": 0.0226
+    },
+    "hard_negatives": {
+     "precision": 0.0,
+     "recall": 1.0,
+     "fpr": 0.1899
+    },
+    "natural_final": {
+     "precision": 0.9315,
+     "recall": 0.8193,
+     "fpr": 0.0862
+    }
+   },
+   "gate": {
+    "pass": false,
+    "failures": [
+     "hard-negative FPR 0.1732 -> 0.1899"
+    ]
+   }
+  }
+ ]
+}
