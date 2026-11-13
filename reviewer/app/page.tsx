@@ -149,7 +149,7 @@ export default function ReviewPage() {
                   <span className="lbl">{r.label}</span>
                   {r.score != null && <span className="bar"><i style={{ width: `${Math.round(r.score * 100)}%` }} /></span>}
                   <span className="detail">
-                    {r.evidence?.identity && `matches ${r.evidence.identity} (d=${r.evidence.distance})`}
+                    {r.evidence?.identity && `matches ${r.evidence.identity} (sim=${r.evidence.similarity})`}
                     {r.evidence?.logo && `mark "${r.evidence.logo}", ${r.evidence.inliers} matched points`}
                     {r.evidence?.mentions && `mentions ${r.evidence.mentions.join(", ")}`}
                     {r.flags && `obfuscated: ${r.flags.join(", ")}`}

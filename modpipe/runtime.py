@@ -70,7 +70,7 @@ def rds() -> redis.Redis:
 
 def cache_key(tenant: str, content_hash: str) -> str:
     c = checker()
-    return f"mod:v1:{tenant}:{c.policy(tenant).version}:{c.text.version}:{c.registry_version}:{content_hash}"
+    return f"mod:v1:{tenant}:{c.policy(tenant).version}:{c.text.version}:{c.model_versions['faces']}:{c.registry_version}:{content_hash}"
 
 
 def cache_get(key: str) -> dict | None:

@@ -6,7 +6,7 @@ export type Reason = {
   evidence?: {
     parts?: { class: string; score: number; box: [number, number, number, number] }[];
     identity?: string;
-    distance?: number;
+    similarity?: number;
     box?: [number, number, number, number];
     logo?: string;
     inliers?: number;

@@ -1,0 +1,217 @@
+{
+ "n_pos": 30,
+ "n_neg": 80,
+ "no_face_in_positive": 0,
+ "no_face_in_negative": 9,
+ "global_default_0.6": {
+  "dev": {
+   "threshold": -0.6,
+   "precision": 0.3684,
+   "recall": 0.9333,
+   "fpr": 0.6,
+   "tp": 14,
+   "fp": 24,
+   "fn": 1,
+   "n_pos": 15,
+   "n_neg": 40
+  },
+  "test": {
+   "threshold": -0.6,
+   "precision": 0.4286,
+   "recall": 1.0,
+   "fpr": 0.5,
+   "tp": 15,
+   "fp": 20,
+   "fn": 0,
+   "n_pos": 15,
+   "n_neg": 40
+  }
+ },
+ "test_curve": [
+  {
+   "threshold": -0.36,
+   "precision": 1.0,
+   "recall": 0.1333,
+   "fpr": 0.0,
+   "tp": 2,
+   "fp": 0,
+   "fn": 13,
+   "n_pos": 15,
+   "n_neg": 40
+  },
+  {
+   "threshold": -0.4,
+   "precision": 1.0,
+   "recall": 0.4,
+   "fpr": 0.0,
+   "tp": 6,
+   "fp": 0,
+   "fn": 9,
+   "n_pos": 15,
+   "n_neg": 40
+  },
+  {
+   "threshold": -0.45,
+   "precision": 0.6154,
+   "recall": 0.5333,
+   "fpr": 0.125,
+   "tp": 8,
+   "fp": 5,
+   "fn": 7,
+   "n_pos": 15,
+   "n_neg": 40
+  },
+  {
+   "threshold": -0.5,
+   "precision": 0.55,
+   "recall": 0.7333,
+   "fpr": 0.225,
+   "tp": 11,
+   "fp": 9,
+   "fn": 4,
+   "n_pos": 15,
+   "n_neg": 40
+  },
+  {
+   "threshold": -0.55,
+   "precision": 0.5357,
+   "recall": 1.0,
+   "fpr": 0.325,
+   "tp": 15,
+   "fp": 13,
+   "fn": 0,
+   "n_pos": 15,
+   "n_neg": 40
+  },
+  {
+   "threshold": -0.6,
+   "precision": 0.4286,
+   "recall": 1.0,
+   "fpr": 0.5,
+   "tp": 15,
+   "fp": 20,
+   "fn": 0,
+   "n_pos": 15,
+   "n_neg": 40
+  }
+ ],
+ "roc_auc": 0.8565,
+ "global_tuned": {
+  "distance": 0.3599790930747986,
+  "dev": {
+   "threshold": -0.36,
+   "precision": 1.0,
+   "recall": 0.2667,
+   "fpr": 0.0,
+   "tp": 4,
+   "fp": 0,
+   "fn": 11,
+   "n_pos": 15,
+   "n_neg": 40
+  },
+  "test": {
+   "threshold": -0.36,
+   "precision": 1.0,
+   "recall": 0.1333,
+   "fpr": 0.0,
+   "tp": 2,
+   "fp": 0,
+   "fn": 13,
+   "n_pos": 15,
+   "n_neg": 40
+  }
+ },
+ "per_identity_cohort": {
+  "thresholds": {
+   "protected_00": 0.36,
+   "protected_01": 0.36,
+   "protected_02": 0.36,
+   "protected_03": 0.36,
+   "protected_04": 0.36,
+   "protected_05": 0.36,
+   "protected_06": 0.36,
+   "protected_07": 0.36,
+   "protected_08": 0.36,
+   "protected_09": 0.36
+  },
+  "dev": {
+   "threshold": 0.0,
+   "precision": 1.0,
+   "recall": 0.2667,
+   "fpr": 0.0,
+   "tp": 4,
+   "fp": 0,
+   "fn": 11,
+   "n_pos": 15,
+   "n_neg": 40
+  },
+  "test": {
+   "threshold": 0.0,
+   "precision": 1.0,
+   "recall": 0.1333,
+   "fpr": 0.0,
+   "tp": 2,
+   "fp": 0,
+   "fn": 13,
+   "n_pos": 15,
+   "n_neg": 40
+  }
+ },
+ "default_face_stress_set": {
+  "n": 40,
+  "median_pairwise_note": "median dlib distance between these 'different' people is ~0.47",
+  "false_match_rate_global_0.6": 1.0,
+  "false_match_rate_global_tuned": 0.2308,
+  "false_match_rate_cohort": 0.2308,
+  "closest_identity_counts": {
+   "protected_02": 38,
+   "protected_07": 1
+  }
+ },
+ "latency_ms": {
+  "p50": 141.1,
+  "p99": 267.8
+ },
+ "hardest_negatives": [
+  {
+   "path": "swap2_i02_0_0.png",
+   "closest": "protected_02",
+   "d": 0.377
+  },
+  {
+   "path": "swap2_i02_1_0.png",
+   "closest": "protected_02",
+   "d": 0.4
+  },
+  {
+   "path": "neg3_01_0.png",
+   "closest": "protected_03",
+   "d": 0.41
+  },
+  {
+   "path": "neg3_11_0.png",
+   "closest": "protected_02",
+   "d": 0.413
+  },
+  {
+   "path": "neg3_07_1.png",
+   "closest": "protected_06",
+   "d": 0.432
+  },
+  {
+   "path": "neg3_21_1.png",
+   "closest": "protected_02",
+   "d": 0.433
+  },
+  {
+   "path": "neg3_07_0.png",
+   "closest": "protected_06",
+   "d": 0.445
+  },
+  {
+   "path": "neg3_18_1.png",
+   "closest": "protected_09",
+   "d": 0.445
+  }
+ ]
+}

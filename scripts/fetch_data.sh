@@ -19,4 +19,10 @@ fi
   https://raw.githubusercontent.com/opencv/opencv_3rdparty/dnn_samples_face_detector_20180205_fp16/res10_300x300_ssd_iter_140000_fp16.caffemodel
 [ -f models/deploy.prototxt ] || curl -fsSL -o models/deploy.prototxt \
   https://raw.githubusercontent.com/opencv/opencv/4.x/samples/dnn/face_detector/deploy.prototxt
+# YuNet face detector + SFace face embedding (Apache-2.0), from the OpenCV model zoo.
+ZOO=https://media.githubusercontent.com/media/opencv/opencv_zoo/main/models
+[ -f models/face_detection_yunet_2023mar.onnx ] || curl -fsSL -o models/face_detection_yunet_2023mar.onnx \
+  $ZOO/face_detection_yunet/face_detection_yunet_2023mar.onnx
+[ -f models/face_recognition_sface_2021dec.onnx ] || curl -fsSL -o models/face_recognition_sface_2021dec.onnx \
+  $ZOO/face_recognition_sface/face_recognition_sface_2021dec.onnx
 echo ok

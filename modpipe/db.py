@@ -157,7 +157,8 @@ def registry_version(conn) -> int:
     return conn.execute("SELECT v FROM registry_version").fetchone()["v"]
 
 
-def enroll_identity(conn, identity_id: str, name: str, vecs: list[np.ndarray], tenant: str | None, source: str) -> int:
+def enroll_identity(conn, identity_id: str, name: str, vecs: list[np.ndarray], tenant: str | None, source: str,
+                    model: str = "yunet+sface+dlib-v2") -> int:
     with conn.transaction():
         conn.execute("""INSERT INTO protected_identities (id, tenant, display_name) VALUES (%s,%s,%s)
                         ON CONFLICT (id) DO UPDATE SET display_name = EXCLUDED.display_name""",
@@ -165,8 +166,8 @@ def enroll_identity(conn, identity_id: str, name: str, vecs: list[np.ndarray], t
         # enrolling again replaces that identity's photos (re-enrollment, not accumulation)
         conn.execute("DELETE FROM identity_embeddings WHERE identity_id=%s", (identity_id,))
         for v in vecs:
-            conn.execute("INSERT INTO identity_embeddings (identity_id, vec, source) VALUES (%s,%s,%s)",
-                         (identity_id, [float(x) for x in v], source))
+            conn.execute("INSERT INTO identity_embeddings (identity_id, vec, source, model) VALUES (%s,%s,%s,%s)",
+                         (identity_id, [float(x) for x in v], source, model))
         conn.execute("INSERT INTO audit_log (actor, action, target) VALUES ('api','identity.enroll',%s)", (identity_id,))
         return bump_registry(conn)
 

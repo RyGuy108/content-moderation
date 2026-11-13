@@ -42,3 +42,26 @@ def test_sampler_dedupes_static_video(tmp_path):
     ts = [round(f.t, 2) for f in frames]
     assert any(3.0 <= t < 3.25 for t in ts)          # caught the 0.25 s event
     assert len(frames) <= 4                           # and skipped the identical frames
+
+
+def test_face_gallery_fused_matching_and_legacy_rows():
+    from modpipe.image.faces import DIM, IdentityGallery, similarity_to_score
+
+    rng = np.random.default_rng(0)
+
+    def vec():
+        s = rng.normal(size=128).astype(np.float32)
+        return np.concatenate([s / np.linalg.norm(s), rng.normal(scale=0.05, size=128).astype(np.float32)])
+    a, b = vec(), vec()
+    g = IdentityGallery()
+    g.load([("alice", a), ("bob", b), ("legacy", np.zeros(128, np.float32))], version=3)
+    assert g.skipped == 1 and g.mat.shape == (2, DIM)       # 128-d dlib-only rows need re-enrollment
+    probe = a + np.concatenate([rng.normal(scale=0.02, size=128), np.zeros(128)]).astype(np.float32)
+    ident, sim = g.match(probe)
+    assert ident == "alice" and similarity_to_score(sim) > 0.9
+    assert similarity_to_score(g.similarities(probe)["bob"]) == 0.0
+
+
+def test_face_embedder_loads_and_ignores_faceless_image():
+    from modpipe.image.faces import FaceEmbedder
+    assert FaceEmbedder().faces(np.full((480, 640, 3), 128, np.uint8)) == []

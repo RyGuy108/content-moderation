@@ -53,8 +53,9 @@ def timed(fn, *a):
     return r, (time.perf_counter() - t0) * 1000
 
 
-def eval_faces():
-    fe = FaceEmbedder()
+def eval_faces(embedder=None, label="yunet+sface+dlib"):
+    from modpipe.image.faces import fused_similarity, similarity_to_score
+    fe = embedder or FaceEmbedder()
     enroll = {}
     for p in sorted((GEN / "faces" / "enroll").glob("*.png")):
         f = fe.faces(cv2.imread(str(p)))
@@ -68,99 +69,63 @@ def eval_faces():
         faces, ms = timed(fe.faces, cv2.imread(str(path)))
         times.append(ms)
         if not faces:
-            return None, 9.9, 0
-        D = np.linalg.norm(np.stack([f.vec for f in faces])[:, None] - M[None], axis=2)  # (faces, ids)
-        i, j = np.unravel_index(D.argmin(), D.shape)
-        return ids[j], float(D[i, j]), len(faces), D.min(axis=0)
+            return None, -9.9, 0, None
+        S = np.stack([fused_similarity(M, f.vec) for f in faces])   # (faces, ids), higher = closer
+        i, j = np.unravel_index(S.argmax(), S.shape)
+        return ids[j], float(S[i, j]), len(faces), S.max(axis=0)
 
-    pos, neg = [], []
+    def row(p, r, **kw):
+        return {"path": p.name, "pred": r[0], "sim": r[1], "faces": r[2],
+                "per_id": (r[3].tolist() if r[3] is not None else None), **kw}
+
+    pos = []
     for p in sorted((GEN / "faces" / "swaps2").glob("swap2_p*.png")):
         k = int(re.search(r"_p(\d+)_", p.name).group(1))
-        r = best(p)
-        pos.append({"path": p.name, "identity": f"protected_{k:02d}", "pred": r[0], "d": r[1],
-                    "faces": r[2], "split": "dev" if k % 2 == 0 else "test",
-                    "per_id": (r[3].tolist() if len(r) > 3 else None)})
+        pos.append(row(p, best(p), identity=f"protected_{k:02d}", split="dev" if k % 2 == 0 else "test"))
     # Negatives: people described explicitly (varied age/ethnicity/gender, none overlapping a
     # protected description) plus Magic Hour swaps of non-enrolled impostor faces.
     neg_paths = sorted((GEN / "faces" / "negatives").glob("*.png")) + \
         sorted((GEN / "faces" / "swaps2").glob("swap2_i*.png")) + sorted((GEN / "faces" / "swaps").glob("swap_i*.png"))
+    neg = [row(p, best(p), split="dev" if n % 2 == 0 else "test") for n, p in enumerate(neg_paths)]
     # Stress set, reported separately: "a person ..." prompts, which z-image-turbo renders as
     # nearly the same young East Asian man every time.
-    default_face = sorted((GEN / "faces" / "scenes2").glob("*.png"))
-    stress = []
-    for p in default_face:
-        r = best(p)
-        stress.append({"path": p.name, "pred": r[0], "d": r[1], "faces": r[2],
-                       "per_id": (r[3].tolist() if len(r) > 3 else None)})
-    for n, p in enumerate(neg_paths):
-        r = best(p)
-        neg.append({"path": p.name, "pred": r[0], "d": r[1], "faces": r[2], "split": "dev" if n % 2 == 0 else "test",
-                    "per_id": (r[3].tolist() if len(r) > 3 else None)})
+    stress = [row(p, best(p)) for p in sorted((GEN / "faces" / "scenes2").glob("*.png"))]
 
-    def score(d):
-        return -d   # higher = more likely the protected person
+    def pos_score(r):   # a match to the wrong protected identity counts as a miss
+        return r["sim"] if r["pred"] == r["identity"] else -9.9
 
-    def correct(r):
-        return r["pred"] == r["identity"]
-
-    out = {"n_pos": len(pos), "n_neg": len(neg), "no_face_in_positive": sum(r["faces"] == 0 for r in pos),
+    def split(rows, name, positive):
+        return [pos_score(r) if positive else r["sim"] for r in rows if r["split"] == name]
+    dev_pos, test_pos = split(pos, "dev", True), split(pos, "test", True)
+    dev_neg, test_neg = split(neg, "dev", False), split(neg, "test", False)
+    out = {"model": label, "n_pos": len(pos), "n_neg": len(neg),
+           "no_face_in_positive": sum(r["faces"] == 0 for r in pos),
            "no_face_in_negative": sum(r["faces"] == 0 for r in neg)}
-    dev_pos = [score(r["d"]) if correct(r) else -9.9 for r in pos if r["split"] == "dev"]
-    dev_neg = [score(r["d"]) for r in neg if r["split"] == "dev"]
-    test_pos = [score(r["d"]) if correct(r) else -9.9 for r in pos if r["split"] == "test"]
-    test_neg = [score(r["d"]) for r in neg if r["split"] == "test"]
-    # global threshold: dlib's default 0.6 vs one tuned on dev for <= 2% false matches
-    out["global_default_0.6"] = {"dev": pr(dev_pos, dev_neg, -0.6), "test": pr(test_pos, test_neg, -0.6)}
-    t = pick_threshold(dev_pos, dev_neg, 0.02)
-    out["test_curve"] = [pr(test_pos, test_neg, -d) for d in (0.36, 0.40, 0.45, 0.50, 0.55, 0.60)]
-    allp = [x for x in dev_pos + test_pos]
-    alln = [x for x in dev_neg + test_neg]
+    allp, alln = dev_pos + test_pos, dev_neg + test_neg
     out["roc_auc"] = round(float(np.mean([(p > n) + 0.5 * (p == n) for p in allp for n in alln])), 4)
-    out["global_tuned"] = {"distance": -t, "dev": pr(dev_pos, dev_neg, t), "test": pr(test_pos, test_neg, t)}
-
-    # Per-identity thresholds from a cohort of dev negatives: some people (in our data, the
-    # East Asian identities) sit much closer to random faces in dlib's embedding space, so one
-    # global cutoff either misses everyone else or false-matches them constantly.
-    cohort = np.array([r["per_id"] for r in neg if r["split"] == "dev" and r["per_id"] is not None])  # (n, ids)
-    per_id_thr = {}
-    for j, ident in enumerate(ids):
-        q = np.quantile(cohort[:, j], 0.02)
-        per_id_thr[ident] = float(min(-t, q - 0.02))
-
-    def cohort_hit(r):
-        if r["per_id"] is None:
-            return None
-        margins = [per_id_thr[i] - r["per_id"][j] for j, i in enumerate(ids)]
-        j = int(np.argmax(margins))
-        return ids[j], margins[j]
-
-    def cohort_scores(rows, positive):
-        s = []
-        for r in rows:
-            h = cohort_hit(r)
-            if h is None:
-                s.append(-9.9)
-            elif positive and h[0] != r["identity"]:
-                s.append(-9.9)
-            else:
-                s.append(h[1])
-        return s
-    cp_dev = cohort_scores([r for r in pos if r["split"] == "dev"], True)
-    cn_dev = cohort_scores([r for r in neg if r["split"] == "dev"], False)
-    cp_test = cohort_scores([r for r in pos if r["split"] == "test"], True)
-    cn_test = cohort_scores([r for r in neg if r["split"] == "test"], False)
-    out["per_identity_cohort"] = {"thresholds": {k: round(v, 4) for k, v in per_id_thr.items()},
-                                  "dev": pr(cp_dev, cn_dev, 0.0), "test": pr(cp_test, cn_test, 0.0)}
+    # ROC points on the test half (thresholds are not tuned on it)
+    out["test_curve"] = [pr(test_pos, test_neg, float(t)) for t in np.arange(0.60, 0.0, -0.05)]
+    t0 = pick_threshold(dev_pos, dev_neg, 0.0)
+    t2 = pick_threshold(dev_pos, dev_neg, 0.02)
+    out["tuned_0fp"] = {"similarity": round(t0, 4), "dev": pr(dev_pos, dev_neg, t0), "test": pr(test_pos, test_neg, t0)}
+    out["tuned_2fp"] = {"similarity": round(t2, 4), "dev": pr(dev_pos, dev_neg, t2), "test": pr(test_pos, test_neg, t2)}
+    # what production does: policy reviews at score >= 0.5 and blocks at >= 0.95
+    to_score = lambda xs: [similarity_to_score(x) for x in xs]  # noqa: E731
+    out["policy_review_0.5"] = {"dev": pr(to_score(dev_pos), to_score(dev_neg), 0.5),
+                                "test": pr(to_score(test_pos), to_score(test_neg), 0.5),
+                                "all": pr(to_score(allp), to_score(alln), 0.5)}
+    out["policy_block_0.95"] = {"all": pr(to_score(allp), to_score(alln), 0.95)}
+    out["recall_at_0_false_matches_all"] = round(float(np.mean([p > max(alln) for p in allp])), 4)
+    out["recall_at_5pct_fpr_all"] = round(float(np.mean([p > np.quantile(alln, 0.95) for p in allp])), 4)
     st = [r for r in stress if r["faces"]]
     out["default_face_stress_set"] = {
-        "n": len(stress), "median_pairwise_note": "median dlib distance between these 'different' people is ~0.47",
-        "false_match_rate_global_0.6": round(sum(r["d"] < 0.6 for r in st) / max(1, len(st)), 4),
-        "false_match_rate_global_tuned": round(sum(r["d"] < -t for r in st) / max(1, len(st)), 4),
-        "false_match_rate_cohort": round(sum((cohort_hit(r) or (None, -1))[1] >= 0 for r in st) / max(1, len(st)), 4),
-        "closest_identity_counts": {i: sum(r["pred"] == i for r in st) for i in ids if any(r["pred"] == i for r in st)}}
+        "n": len(stress), "with_face": len(st),
+        "false_match_rate_policy_review": round(sum(similarity_to_score(r["sim"]) >= 0.5 for r in st) / max(1, len(st)), 4),
+        "false_match_rate_tuned_0fp": round(sum(r["sim"] >= t0 for r in st) / max(1, len(st)), 4)}
     out["latency_ms"] = {"p50": round(float(np.median(times)), 1), "p99": round(float(np.percentile(times, 99)), 1)}
-    out["hardest_negatives"] = sorted(({"path": r["path"], "closest": r["pred"], "d": round(r["d"], 3)} for r in neg if r["faces"]),
-                                      key=lambda x: x["d"])[:8]
+    out["hardest_negatives"] = sorted(({"path": r["path"], "closest": r["pred"], "sim": round(r["sim"], 3)}
+                                       for r in neg if r["faces"]), key=lambda x: -x["sim"])[:6]
+    out["sims"] = {"pos_dev": dev_pos, "pos_test": test_pos, "neg_dev": dev_neg, "neg_test": test_neg}
     return out
 
 
@@ -218,7 +183,8 @@ def main():
     res = {"faces": eval_faces(), "logos": eval_logos(), "nsfw": eval_nsfw()}
     json.dump(res, open(ROOT / "results" / "images.json", "w"), indent=1)
     f = res["faces"]
-    print("faces", {k: f[k]["test"] for k in ("global_default_0.6", "global_tuned", "per_identity_cohort")})
+    f.pop("sims")
+    print("faces", f["roc_auc"], f["tuned_0fp"]["test"], f["policy_review_0.5"]["all"], f["recall_at_0_false_matches_all"])
     print("faces no-face", f["no_face_in_positive"], "/", f["n_pos"], "latency", f["latency_ms"])
     print("logos", res["logos"]["test"], res["logos"]["latency_ms"])
     print("nsfw", {k: v for k, v in res["nsfw"].items() if k != "flagged"})

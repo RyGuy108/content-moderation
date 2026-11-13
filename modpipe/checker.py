@@ -13,7 +13,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from .image.faces import FaceEmbedder, IdentityGallery, distance_to_score
+from .image.faces import FaceEmbedder, IdentityGallery, similarity_to_score
 from .image.logos import LogoIndex
 from .image.nsfw import NSFWDetector
 from .policy import Decision, Policy, decide
@@ -82,7 +82,7 @@ class Checker:
 
     @property
     def model_versions(self) -> dict:
-        return {"prompt": self.text.version, "nsfw": "nudenet-320n", "faces": "dlib-resnet-v1",
+        return {"prompt": self.text.version, "nsfw": "nudenet-320n", "faces": "yunet+sface+dlib-v2",
                 "registry": self.registry_version}
 
     # ---- detectors ----
@@ -102,14 +102,14 @@ class Checker:
             r.timings_ms["nsfw"] = nsfw_ms
             if faces and len(self.gallery.ids):
                 t1 = time.perf_counter()
-                best = (None, 9.9, None)
+                best = (None, -9.9, None)
                 for f in self.faces.faces(img):
-                    ident, d = self.gallery.match(f.vec)
-                    if d < best[1]:
-                        best = (ident, d, f.box)
-                r.scores["protected_face"] = round(distance_to_score(best[1]), 4)
+                    ident, sim = self.gallery.match(f.vec)
+                    if sim > best[1]:
+                        best = (ident, sim, f.box)
+                r.scores["protected_face"] = round(similarity_to_score(best[1]), 4)
                 if best[0] is not None and r.scores["protected_face"] > 0:
-                    r.evidence["protected_face"] = {"identity": best[0], "distance": round(best[1], 4), "box": best[2]}
+                    r.evidence["protected_face"] = {"identity": best[0], "similarity": round(best[1], 4), "box": best[2]}
                 r.timings_ms["faces"] = (time.perf_counter() - t1) * 1000
             if logos and self.logos.refs:
                 t1 = time.perf_counter()

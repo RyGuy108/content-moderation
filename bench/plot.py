@@ -44,7 +44,11 @@ ax[1].set_title("Video post-check: frames vs. recall", fontsize=11, loc="left")
 
 # 3. image detectors operating curves (test split)
 fc = im["faces"]["test_curve"]
-ax[2].plot([c["fpr"] for c in fc], [c["recall"] for c in fc], "o-", color=BLUE, label=f"protected face (dlib, AUC {im['faces']['roc_auc']:.2f})")
+ax[2].plot([c["fpr"] for c in fc], [c["recall"] for c in fc], "o-", color=BLUE, label=f"protected face (SFace+dlib, AUC {im['faces']['roc_auc']:.2f})")
+if (R / "faces_v1_dlib.json").exists():
+    f1 = json.load(open(R / "faces_v1_dlib.json"))
+    ax[2].plot([c["fpr"] for c in f1["test_curve"]], [c["recall"] for c in f1["test_curve"]], "o--", color=BLUE, alpha=.45,
+               label=f"protected face, v1 dlib only (AUC {f1['roc_auc']:.2f})")
 lc = im["logos"]["test_curve"]
 ax[2].plot([c["fpr"] for c in lc], [c["recall"] for c in lc], "s-", color="#a86400", label="registered logo (SIFT)")
 ax[2].set_xlabel("false-positive rate")

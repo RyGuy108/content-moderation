@@ -21,7 +21,7 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from modpipe.image.faces import FaceEmbedder, IdentityGallery, distance_to_score  # noqa: E402
+from modpipe.image.faces import FaceEmbedder, IdentityGallery, similarity_to_score  # noqa: E402
 from modpipe.video import sample_frames  # noqa: E402
 
 CLIP_GLOBS = ["bio-explainer/out/*/shot*.mp4", "book-scenes/public/books/time-machine/clips/*.mp4",
@@ -74,7 +74,7 @@ def detect(fe, gal, path, strategy) -> tuple[bool, int, float]:
     for f in frames:
         for face in fe.faces(f.image):
             _, d = gal.match(face.vec)
-            if distance_to_score(d) >= 0.5:
+            if similarity_to_score(d) >= 0.5:
                 hit = True
                 break
         if hit:
@@ -109,7 +109,7 @@ def main():
                 out = Path(td) / f"c{ci}_{seg}.mp4"
                 plant(clip, sw, start, seg, out)
                 # positive only if the planted still is detectable at all (checked on the still)
-                if not any(distance_to_score(gal.match(f.vec)[1]) >= 0.5 for f in fe.faces(sw)):
+                if not any(similarity_to_score(gal.match(f.vec)[1]) >= 0.5 for f in fe.faces(sw)):
                     continue
                 for s in strategies:
                     hit, n, ms = detect(fe, gal, out, s)
