@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -20,7 +21,9 @@ async def main(n=3000, conc=32, url="http://localhost:8000/v1/precheck"):
     prompts = [f"{rows[i % len(rows)]} #{i}" for i in range(n)]
     lat, actions = [], {}
     sem = asyncio.Semaphore(conc)
-    async with httpx.AsyncClient(timeout=30, limits=httpx.Limits(max_connections=conc)) as c:
+    key = os.environ.get("MODPIPE_API_KEY")   # mint one with a high limit: python -m modpipe.auth create --tenant load ...
+    async with httpx.AsyncClient(timeout=30, limits=httpx.Limits(max_connections=conc),
+                                 headers={"Authorization": f"Bearer {key}"} if key else {}) as c:
         async def one(p):
             async with sem:
                 t0 = time.perf_counter()

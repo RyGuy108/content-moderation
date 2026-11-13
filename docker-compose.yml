@@ -1,12 +1,17 @@
 # docker compose up --build
 #   API      http://localhost:8000   (pre-check, post-check, enrollment, review queue)
 #   Reviewer http://localhost:3000   (human review console)
+# Mint keys (printed once):
+#   docker compose exec api python -m modpipe.auth create --tenant default --name gateway
+#   docker compose exec api python -m modpipe.auth create --tenant '*' --name ryan --role reviewer
 x-env: &env
   DATABASE_URL: postgresql://postgres:postgres@postgres:5432/modpipe
   REDIS_URL: redis://redis:6379/0
   MEDIA_DIR: /var/modpipe/media
   WEBHOOK_SECRET: ${WEBHOOK_SECRET:-dev-secret}
   MAGIC_HOUR_API_KEY: ${MAGIC_HOUR_API_KEY:-}
+  AUTH_MODE: ${AUTH_MODE:-keys}                     # keys | open
+  MEDIA_SIGNING_KEY: ${MEDIA_SIGNING_KEY:-dev-media-key}
 
 services:
   postgres:

@@ -7,16 +7,17 @@ const API = process.env.NEXT_PUBLIC_MODPIPE_API ?? "http://localhost:8000";
 const LABELS = ["sexual", "minor_sexual", "gore", "hate", "self_harm", "real_person", "trademark",
   "nsfw_exposed", "protected_face", "logo"];
 
-function useReviewer(): [string, (v: string) => void] {
-  const [name, setName] = useState("");
+/** The reviewer's API key (role "reviewer"). The server takes the reviewer's name from the key. */
+function useApiKey(): [string, (v: string) => void] {
+  const [key, setKey] = useState("");
   useEffect(() => {
-    try { setName(localStorage.getItem("reviewer") ?? ""); } catch { /* private mode */ }
+    try { setKey(localStorage.getItem("modpipe_key") ?? ""); } catch { /* private mode */ }
   }, []);
   const set = (v: string) => {
-    setName(v);
-    try { localStorage.setItem("reviewer", v); } catch { /* ignore */ }
+    setKey(v);
+    try { localStorage.setItem("modpipe_key", v); } catch { /* ignore */ }
   };
-  return [name, set];
+  return [key, set];
 }
 
 /** Draws detector evidence (NSFW part boxes, matched face, logo quad) over the image. */
@@ -44,7 +45,7 @@ function Evidence({ src, reasons }: { src: string; reasons: Reason[] }) {
 }
 
 export default function ReviewPage() {
-  const [reviewer, setReviewer] = useReviewer();
+  const [apiKey, setApiKey] = useApiKey();
   const [item, setItem] = useState<Item | null>(null);
   const [empty, setEmpty] = useState(false);
   const [labels, setLabels] = useState<Set<string>>(new Set());
@@ -55,16 +56,22 @@ export default function ReviewPage() {
   const shown = useRef<number>(0);
 
   const refreshStats = useCallback(async () => {
-    try { setStats(await (await fetch(`${API}/v1/review/stats`)).json()); } catch { /* api down */ }
-  }, []);
+    if (!apiKey) return;
+    try {
+      const r = await fetch(`${API}/v1/review/stats`, { headers: { Authorization: `Bearer ${apiKey}` } });
+      if (r.ok) setStats(await r.json());
+    } catch { /* api down */ }
+  }, [apiKey]);
 
   const next = useCallback(async () => {
-    if (!reviewer) return;
+    if (!apiKey) return;
     setBusy(true); setError(null);
     try {
-      const r = await fetch(`${API}/v1/review/claim?reviewer=${encodeURIComponent(reviewer)}`, { method: "POST" });
+      const r = await fetch(`${API}/v1/review/claim`, { method: "POST", headers: { Authorization: `Bearer ${apiKey}` } });
       const body = await r.json();
-      if (body.empty) { setItem(null); setEmpty(true); }
+      if (r.status === 401 || r.status === 403) { setError(body.detail ?? "key rejected"); setItem(null); }
+      else if (r.status === 429) setError("Slow down: rate limited.");
+      else if (body.empty) { setItem(null); setEmpty(true); }
       else {
         setItem(body); setEmpty(false); shown.current = Date.now();
         setLabels(new Set((body as Item).check.reasons.filter((x) => LABELS.includes(x.label)).map((x) => x.label)));
@@ -73,19 +80,19 @@ export default function ReviewPage() {
     } catch (e) { setError(String(e)); }
     setBusy(false);
     refreshStats();
-  }, [reviewer, refreshStats]);
+  }, [apiKey, refreshStats]);
 
   const resolve = useCallback(async (decision: "allow" | "block") => {
     if (!item || busy) return;
     setBusy(true);
     const r = await fetch(`${API}/v1/review/${item.id}`, {
-      method: "POST", headers: { "content-type": "application/json" },
-      body: JSON.stringify({ reviewer, decision, labels: decision === "block" ? [...labels] : [], note: note || null }),
+      method: "POST", headers: { "content-type": "application/json", Authorization: `Bearer ${apiKey}` },
+      body: JSON.stringify({ decision, labels: decision === "block" ? [...labels] : [], note: note || null }),
     });
     setBusy(false);
     if (r.status === 409) setError("Your lease on this item expired and someone else may have it. Loading the next one.");
     next();
-  }, [item, busy, reviewer, labels, note, next]);
+  }, [item, busy, apiKey, labels, note, next]);
 
   // a = allow, b = block, n = skip to next
   useEffect(() => {
@@ -102,7 +109,7 @@ export default function ReviewPage() {
   useEffect(() => { refreshStats(); const t = setInterval(refreshStats, 5000); return () => clearInterval(t); }, [refreshStats]);
 
   const chk = item?.check;
-  const media = chk?.input.media?.[0];
+  const media = item?.media_urls?.[0];
   return (
     <main>
       <header>
@@ -118,12 +125,13 @@ export default function ReviewPage() {
         )}
       </header>
 
-      {!reviewer || (!item && !empty) ? (
+      {!apiKey || (!item && !empty) ? (
         <section className="card start">
-          <label>Your name
-            <input value={reviewer} onChange={(e) => setReviewer(e.target.value)} placeholder="e.g. ryan" />
+          <label>Reviewer API key
+            <input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value.trim())} placeholder="mp_..." />
           </label>
-          <button disabled={!reviewer || busy} onClick={next}>Start reviewing</button>
+          <button disabled={!apiKey || busy} onClick={next}>Start reviewing</button>
+          {error && <p className="error">{error}</p>}
         </section>
       ) : empty ? (
         <section className="card start"><p>Queue is empty.</p><button onClick={next}>Check again</button></section>
@@ -131,8 +139,8 @@ export default function ReviewPage() {
         <section className="item">
           <div className="left">
             {media && (chk.subject === "video"
-              ? <video src={`${API}/v1/media/${media}`} controls muted loop />
-              : <Evidence src={`${API}/v1/media/${media}`} reasons={chk.reasons} />)}
+              ? <video src={`${API}${media}`} controls muted loop />
+              : <Evidence src={`${API}${media}`} reasons={chk.reasons} />)}
             {chk.input.prompt && <blockquote>{chk.input.prompt}</blockquote>}
           </div>
           <div className="right card">

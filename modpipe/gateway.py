@@ -39,8 +39,11 @@ class Result:
 
 
 class ModeratedMagicHour:
-    def __init__(self, api: str = "http://localhost:8000", tenant: str = "default", token: str | None = None):
-        self.api = httpx.Client(base_url=api, timeout=60)
+    def __init__(self, api: str = "http://localhost:8000", tenant: str = "default", token: str | None = None,
+                 api_key: str | None = None):
+        # the moderation key decides the tenant server-side; `tenant` only matters with AUTH_MODE=open
+        key = api_key or os.environ.get("MODPIPE_API_KEY")
+        self.api = httpx.Client(base_url=api, timeout=60, headers={"Authorization": f"Bearer {key}"} if key else {})
         self.tenant = tenant
         self.mh = Client(token=token or os.environ["MAGIC_HOUR_API_KEY"])
 

@@ -1,13 +1,14 @@
 """Live end-to-end run against the real Magic Hour API through the moderation service.
 
 Needs the API (uvicorn modpipe.api:app) and a worker (python -m modpipe.worker) running, plus
-MAGIC_HOUR_API_KEY. Enrolls the 10 synthetic protected identities, then sends a mix of
+MAGIC_HOUR_API_KEY, MODPIPE_API_KEY (client) and MODPIPE_ADMIN_KEY. Enrolls the 10 synthetic protected identities, then sends a mix of
 requests through ModeratedMagicHour and records what was blocked, what was generated, and how
 many credits the pre-check saved. Writes results/live.json.
 """
 from __future__ import annotations
 
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -24,12 +25,13 @@ SWAP_COST, IMAGE_COST = 10, 5
 
 
 def main():
-    api = httpx.Client(base_url=API, timeout=120)
+    admin = os.environ.get("MODPIPE_ADMIN_KEY")      # enrollment needs an admin key
+    api = httpx.Client(base_url=API, timeout=120, headers={"Authorization": f"Bearer {admin}"} if admin else {})
     for p in sorted((GEN / "enroll").glob("*.png")):
         ident = p.name[:12]
         api.post("/v1/identities", data={"identity_id": ident, "name": ident.replace("_", " ")},
                  files={"photos": (p.name, p.read_bytes(), "image/png")}).raise_for_status()
-    gw = ModeratedMagicHour(API, tenant="demo")
+    gw = ModeratedMagicHour(API, tenant="demo")     # client key from MODPIPE_API_KEY
     runs = []
 
     def go(kind, desc, fn):

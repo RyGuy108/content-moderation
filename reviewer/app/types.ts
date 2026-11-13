@@ -33,6 +33,8 @@ export type Item = {
   priority: number;
   attempts: number;
   lease_until: string;
+  claimed_by: string;
+  media_urls: string[];   // signed, short-lived: /v1/media/<name>?exp=..&sig=..
   check: Check;
 };
 
