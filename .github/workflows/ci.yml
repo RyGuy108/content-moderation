@@ -1,0 +1,43 @@
+name: ci
+on:
+  push: { branches: [main] }
+  pull_request:
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env: { POSTGRES_PASSWORD: postgres }
+        ports: ["5432:5432"]
+        options: --health-cmd pg_isready --health-interval 2s --health-retries 30
+      redis:
+        image: redis:7
+        ports: ["6379:6379"]
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/modpipe_test
+      REDIS_URL: redis://localhost:6379/0
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.13", cache: pip }
+      - name: Install (CPU-only torch)
+        run: |
+          pip install --index-url https://download.pytorch.org/whl/cpu torch
+          pip install -r requirements.txt
+      - name: Cache model weights
+        uses: actions/cache@v4
+        with: { path: models/*.dat, key: dlib-models-v1 }
+      - run: bash scripts/fetch_data.sh
+      - run: pytest -q
+
+  reviewer:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: reviewer } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: reviewer/package-lock.json }
+      - run: npm ci
+      - run: npm run build
