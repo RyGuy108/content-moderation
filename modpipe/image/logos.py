@@ -32,6 +32,25 @@ def augmented_views(bgr: np.ndarray) -> list[np.ndarray]:
     out = []
     for bg in (np.full_like(bgr, 128, np.float32), np.full_like(bgr, 40, np.float32), texture):
         out.append((bg * (1 - ink) + bgr.astype(np.float32) * ink).astype(np.uint8))
+    return out + tilted_views(bgr)
+
+
+def tilted_views(bgr: np.ndarray) -> list[np.ndarray]:
+    """The mark seen from four off-axis angles (one edge foreshortened by 12-15%). SIFT is only
+    invariant to similarity transforms; a print on a hanging shirt or a mug is a perspective
+    view, so (as in ASIFT) we store a few simulated tilts rather than hoping one frontal view
+    matches. On the eval set this alone took recall at 0 false hits from 0.33 to 0.47."""
+    h, w = bgr.shape[:2]
+    src = np.float32([[0, 0], [w, 0], [w, h], [0, h]])
+    out = []
+    for left, right, top, bottom in ((.15, 0, 0, 0), (0, .15, 0, 0), (0, 0, .12, 0), (0, 0, 0, .12)):
+        dst = src.copy()
+        dst[0, 1] += left * h; dst[3, 1] -= left * h           # noqa: E702  squeeze the left edge
+        dst[1, 1] += right * h; dst[2, 1] -= right * h         # noqa: E702  ... the right edge
+        dst[0, 0] += top * w; dst[1, 0] -= top * w             # noqa: E702  ... the top edge
+        dst[3, 0] += bottom * w; dst[2, 0] -= bottom * w       # noqa: E702  ... the bottom edge
+        M = cv2.getPerspectiveTransform(src, dst)
+        out.append(cv2.warpPerspective(bgr, M, (w, h), borderValue=(255, 255, 255)))
     return out
 
 
@@ -52,7 +71,9 @@ class LogoHit:
 
 
 class LogoIndex:
-    def __init__(self, max_side: int = 1024, nfeatures: int = 4000, shortlist: int = 3):
+    def __init__(self, max_side: int = 1024, nfeatures: int = 4000, shortlist: int = 8):
+        # shortlist: marks verified geometrically per query. Retrieval only has to rank the right
+        # mark in the top `shortlist`; with 3 it missed ~1 in 6 true marks on the eval set.
         self.shortlist = shortlist
         self.sift = cv2.SIFT_create(nfeatures=nfeatures)
         self.refs: list[_Ref] = []

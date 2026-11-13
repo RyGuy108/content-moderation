@@ -2,7 +2,7 @@
 # review: at or above -> human review queue. block: at or above -> rejected outright.
 # Thresholds were picked on the validation split (bench/eval_text.py, bench/eval_images.py),
 # never on the test sets they are reported on.
-version: 4
+version: 5
 default:
   obfuscation_escalates: true
   obfuscation_floor: 0.05
@@ -20,7 +20,7 @@ default:
     # image / video detectors
     nsfw_exposed:       { review: 0.45, block: 0.65 }
     protected_face:     { review: 0.50, block: 0.95 }    # d <= 0.50 review, d <= 0.41 block (bench/eval_images.py)
-    logo:               { review: 0.09, block: null }    # >= 10 geometric inliers
+    logo:               { review: 0.18, block: null }    # >= 12 geometric inliers (dev split, 0 false hits)
 
 tenants:
   # An adult-content platform with age-verified users: nudity allowed, never minors or real people.

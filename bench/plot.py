@@ -50,7 +50,11 @@ if (R / "faces_v1_dlib.json").exists():
     ax[2].plot([c["fpr"] for c in f1["test_curve"]], [c["recall"] for c in f1["test_curve"]], "o--", color=BLUE, alpha=.45,
                label=f"protected face, v1 dlib only (AUC {f1['roc_auc']:.2f})")
 lc = im["logos"]["test_curve"]
-ax[2].plot([c["fpr"] for c in lc], [c["recall"] for c in lc], "s-", color="#a86400", label="registered logo (SIFT)")
+ax[2].plot([c["fpr"] for c in lc], [c["recall"] for c in lc], "s-", color="#a86400", label="registered logo (SIFT + tilted views)")
+if (R / "logos_v1_sift.json").exists():
+    l1 = json.load(open(R / "logos_v1_sift.json"))["test_curve"]
+    ax[2].plot([c["fpr"] for c in l1], [c["recall"] for c in l1], "s--", color="#a86400", alpha=.45,
+               label="registered logo, v1 frontal views only")
 ax[2].set_xlabel("false-positive rate")
 ax[2].set_ylabel("recall")
 ax[2].set_xlim(-0.02, 0.6)
