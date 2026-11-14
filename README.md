@@ -12,10 +12,11 @@ Cyrillic look-alike letters, zero-width spaces) it catches **94% vs 27%**. The p
 end to end over HTTP, including the Postgres write. For video, the frame sampler catches **93% of 0.25-second
 inserted shots while checking 4.9 frames per clip**. Uniform 1 fps sampling catches 20%, and checking every frame
 costs 11× more. In a live run against Magic Hour, the pre-check stopped **3/3 face swaps of protected people
-and 2/2 abusive prompts before any credits were spent**.
+and 2/2 abusive prompts before any credits were spent**. Reviewer decisions flow back into the prompt model
+through a gated retraining loop, and every client authenticates with a tenant API key that is rate-limited in Redis.
 
 **Stack:** Python 3.13, FastAPI, PyTorch, OpenCV, onnxruntime, dlib, Postgres 16, Redis + RQ, Next.js/TypeScript,
-Docker Compose. 23 tests.
+Docker Compose, GitHub Actions. 34 tests, run in CI against real Postgres and Redis.
 
 ![results](results/summary.png)
 
@@ -23,7 +24,8 @@ Docker Compose. 23 tests.
 
 > Built a content moderation pipeline for a generative-media API (FastAPI, PyTorch, OpenCV, Postgres,
 > Redis/RQ, Next.js): a deobfuscating PyTorch prompt classifier, NSFW, protected-face and logo detectors, a
-> scene-aware video frame sampler, and a Postgres review queue with lease-based claiming. On held-out
+> scene-aware video frame sampler, a Postgres review queue with lease-based claiming, tenant API keys with
+> Redis token-bucket rate limits, and a gated retraining loop fed by reviewer decisions. On held-out
 > hand-written prompts it raised recall from 57% to 80% over a keyword blocklist while halving false positives
 > (94% vs 27% on obfuscated prompts) at 3.9 ms p50. Its video sampler caught 93% of quarter-second inserts from
 > 4.9 frames per clip (11× cheaper than checking every frame).
@@ -65,15 +67,23 @@ Thresholds are picked on the dev half and reported on the test half.
 | Detector | Test set | Result |
 |---|---|---|
 | **NSFW** (NudeNet YOLOv8n, ONNX) | 30 hard negatives: swimwear, gym, bodybuilding, statues, ballet, lingerie flat-lay | **0 false positives** (max score 0.38 vs 0.45 review threshold), 23 ms/image. Recall isn't measured here, because the repo deliberately contains no explicit imagery. |
-| **Protected face** (OpenCV res10 SSD + dlib ResNet embedding) | 10 enrolled identities. 30 Magic Hour face swaps of them into new scenes, vs 50 photos of other people + 30 swaps of non-enrolled "impostor" faces | ROC AUC 0.86. **40% recall at 0 false matches** (block threshold). 73% recall at 22% false-match rate (review threshold). 146 ms/image. |
-| **Registered logo** (SIFT/RootSIFT retrieval + similarity-RANSAC verification) | 8 invented marks printed onto 30 Magic Hour product/street scenes with perspective, shading, blur and JPEG damage, vs clean scenes and 4 look-alike unregistered marks | **40% recall at 3% FPR**, 33% at 0%. 490 ms/image. |
+| **Protected face** (YuNet detector, SFace + dlib ResNet embeddings, fused) | 10 enrolled identities, one photo each. 30 Magic Hour face swaps of them into new scenes, vs 50 photos of other people + 30 swaps of non-enrolled "impostor" faces | ROC AUC **0.92** (v1, dlib only: 0.86). **47% recall with 0 false matches** at the review threshold (v1: 20% at its best zero-false-match cutoff), 73% at a 5% false-match rate. 0 false matches on the 39-image "default face" stress set (v1: 38 of 40 at dlib's default cutoff). 230 ms/image. |
+| **Registered logo** (SIFT/RootSIFT retrieval over frontal + simulated off-axis views, similarity-RANSAC verification) | 8 invented marks printed onto 30 Magic Hour product/street scenes with perspective, shading, blur and JPEG damage, vs clean scenes and 4 look-alike unregistered marks | **57% recall at 3% FPR** (v1: 40%), 50% at 0% (v1: 33%). 0 hits on look-alike marks. 390 ms/image. |
+
+**What moved the two weak detectors.** Faces: dlib and SFace make mostly independent mistakes on generated
+faces, so the matcher scores `cos(SFace) - 0.5 * dist(dlib)`. SFace alone reaches AUC 0.89 and dlib 0.87;
+the fusion reaches 0.92 (`results/faces_v1_dlib.json` keeps the old numbers). Logos: SIFT is only invariant to
+rotation and scale, but a print on a hanging shirt is a perspective view. Indexing four simulated tilts of each
+mark (the ASIFT idea) and verifying all eight marks instead of the top three accounts for the whole gain.
+Things that did not help: jittered or flipped face embeddings, augmented enrollment photos, CLAHE, lower SIFT
+contrast thresholds, full-affine RANSAC (more false hits), and multi-scale references.
 
 **What I learned building the face set:** Magic Hour's `z-image-turbo` renders "a person ..." as nearly the same
 young East Asian man every time. The median dlib distance between those supposedly different people is 0.47,
 under dlib's own 0.6 same-person cutoff. One of the protected identities fit that description, so 38 of 40
 "default person" images false-matched him at dlib's default threshold (`default_face_stress_set` in
 `results/images.json`). Negatives now describe who is in the picture. The general lesson is that face matching
-on AI-generated people needs per-identity thresholds and a stronger embedding than dlib.
+on AI-generated people needs a stronger embedding than dlib, which is what v2 added.
 
 ### Video post-check (`bench/eval_video.py`)
 
@@ -87,8 +97,13 @@ protected person is spliced into a random point of each clip, and the question i
 | Uniform 2 fps | 11.0 | 40% | 100% | 100% | 1,227 |
 | **modpipe sampler** (scene-change trigger + 1 s max gap + dHash dedupe) | **4.9** | **93%** | **100%** | **100%** | **805** |
 
-The clean clips also produced 1/16 false alarms with the sampler (3/16 when checking every frame). Those are
-dlib false matches on real Magic Hour footage, the same weakness as above.
+This table was measured with the v1 (dlib) face model, which counts an insert only if the model recognizes the
+inserted still; that gave 43 inserts. With v1, the clean clips produced 1/16 false alarms with the sampler and
+3/16 when checking every frame. Re-running with the v2 face model (`results/video_faces_v2.json`) removes every
+false alarm on the clean clips (0/16 for all strategies), but v2 recognizes fewer of the inserted stills at its
+stricter review threshold, so only 19 inserts qualify. On those, the sampler catches 6/6 quarter-second, 5/7
+half-second and 6/6 one-second inserts, versus 1/6, 2/7 and 6/6 at 1 fps. The v2 face model also makes each
+checked frame slower (1.3 s per clip with the sampler).
 
 ### Live run against Magic Hour (`bench/demo_live.py`, `results/live.json`)
 
@@ -114,7 +129,7 @@ jump the queue. A reviewer who walks away loses their lease, the item returns to
                  ▼                                                                     ▼
         ┌──────────────────── Checker (one per process, models loaded once) ───────────────────────┐
         │ normalize → gazetteer → PyTorch n-gram classifier    NudeNet ONNX (batched)               │
-        │ policy.yaml per tenant → allow / review / block      res10 SSD + dlib → identity gallery  │
+        │ policy.yaml per tenant → allow / review / block      YuNet → SFace + dlib → id gallery    │
         │                                                      SIFT index → logo verification       │
         │                                                      video: scene-aware frame sampler,    │
         │                                                      early exit on first blocking frame   │
@@ -122,7 +137,7 @@ jump the queue. A reviewer who walks away loses their lease, the item returns to
                  │ every decision + scores + evidence
                  ▼
         Postgres: checks · review_items (SKIP LOCKED leases, priority) · protected_identities ·
-                  identity_embeddings · logo_refs · audit_log · registry_version (LISTEN/NOTIFY)
+                  identity_embeddings · logo_refs · api_keys · audit_log · registry_version (LISTEN/NOTIFY)
                  ▲                                         Redis: decision cache (content hash +
                  │                                                policy + model + registry version)
         Next.js review console (reviewer/) — claim, see evidence boxes, allow/block, correct labels
@@ -139,7 +154,35 @@ jump the queue. A reviewer who walks away loses their lease, the item returns to
 - **Registries reload live.** Enrolling a face or registering a logo bumps `registry_version` and fires
   `NOTIFY`. Every API and worker process reloads its in-memory gallery without a restart, and cache keys include
   the version, so stale decisions can't be served.
-- **Reviewer labels become training data.** `review_items.labels` stores the corrected labels for retraining.
+- **Reviewer labels become training data.** See "Retraining loop" below.
+- **Tenant API keys.** The key, not the request body, decides the tenant, so a client can't pick a looser
+  tenant's policy. Roles: `client` (checks), `reviewer` (queue, acting as the key's name), `admin` (enrollment).
+  Keys are stored as SHA-256 only and minted with `python -m modpipe.auth create`. Each key has a token bucket
+  in Redis, updated by one Lua script so it's atomic across API processes (429 + `Retry-After`; fails open if
+  Redis is down). The console's images and videos load through short-lived HMAC-signed URLs, because `<img>`
+  tags can't send an `Authorization` header.
+
+## Retraining loop (`modpipe/feedback.py`, `bench/retrain.py`, `bench/feedback_loop.py`)
+
+Reviewers only ever see what the model flagged, so a loop built on the queue alone learns from false positives
+and never from misses. A random **audit sample** of allowed checks (`AUDIT_SAMPLE_RATE`, default 1%) therefore
+also enters the queue, at the lowest priority. `python -m modpipe.feedback export` turns resolved prompt reviews
+into training rows (majority vote per normalized prompt, ties dropped). `bench/retrain.py` trains a candidate
+with them and promotes it only if test recall drops by at most 1 point and hard-negative false positives rise by
+at most 1 point. The new model version is part of the cache key, so old decisions stop being served.
+
+`bench/feedback_loop.py` runs the whole loop through the real queue: the 203 hand-written dev prompts arrive as
+traffic, simulated reviewers resolve what gets queued, and the model is retrained from the same seed with and
+without the feedback. Scored on `natural_v2`, which is never trained or gated on (`results/feedback.json`):
+
+| Audit rate | Reviewed rows | natural_v2 recall | natural_v2 FPR | Gate |
+|---|---|---|---|---|
+| no feedback | 0 | 0.795 | 6.9% | |
+| 25% | 61 | **0.807** | 6.9% | pass |
+| 100% | 133 | 0.819 | 8.6% | **rejected**: hard-negative FPR 17.3% → 19.0% |
+
+The gains are small, which is what 61 examples against 15k templated rows should give. The point is that the
+plumbing works end to end and that the gate catches a candidate that trades precision for recall.
 
 ## How the prompt model works
 
@@ -164,8 +207,11 @@ names and brands. The hand-written sets hold out vocabulary.
 ## Running it
 
 ```bash
-scripts/fetch_data.sh                 # dlib + res10 weights, COCO captions
+scripts/fetch_data.sh                 # dlib, YuNet, SFace and res10 weights, COCO captions
 docker compose up --build             # api :8000, 2 workers, review console :3000
+docker compose exec api python -m modpipe.auth create --tenant default --name gateway          # client key
+docker compose exec api python -m modpipe.auth create --tenant '*' --name you --role reviewer  # console key
+docker compose exec api python -m modpipe.auth create --tenant '*' --name ops --role admin     # enrollment
 
 # or locally (Postgres 16 + Redis running):
 pip install -r requirements.txt
@@ -173,12 +219,12 @@ uvicorn modpipe.api:app --port 8000 &
 WORKERS=2 python -m modpipe.worker &
 cd reviewer && npm install && npm run dev
 
-curl -s localhost:8000/v1/precheck -H 'content-type: application/json' \
+curl -s localhost:8000/v1/precheck -H "Authorization: Bearer $KEY" -H 'content-type: application/json' \
   -d '{"prompt": "t@yl0r sw1ft n.u.d.e on a beach"}'
 # {"action": "block", "reasons": [{"label": "sexual", ...}, {"label": "real_person_sexual", ...}], "flags": ["leet", "spaced"], ...}
 
-curl -s localhost:8000/v1/identities -F identity_id=talent_42 -F name="Jane Doe" -F photos=@jane.jpg
-curl -s localhost:8000/v1/logos -F logo_id=acme -F name=Acme -F image=@acme.png
+curl -s localhost:8000/v1/identities -H "Authorization: Bearer $ADMIN_KEY" -F identity_id=talent_42 -F name="Jane Doe" -F photos=@jane.jpg
+curl -s localhost:8000/v1/logos -H "Authorization: Bearer $ADMIN_KEY" -F logo_id=acme -F name=Acme -F image=@acme.png
 ```
 
 Reproducing the numbers:
@@ -188,6 +234,7 @@ python bench/make_prompts.py && python bench/train_text.py && python bench/eval_
 python bench/make_images.py all && python bench/make_images.py round2 && python bench/make_images.py negatives  # ~2,000 credits
 python bench/make_logo_set.py && python bench/eval_images.py && python bench/eval_video.py
 python bench/load_precheck.py 3000 32 && python bench/demo_live.py && python bench/plot.py
+python bench/feedback_loop.py                                    # retraining loop experiment
 pytest -q
 ```
 
@@ -195,15 +242,16 @@ The generated images (~500 MB) aren't committed. `data/gen/ledger.jsonl` lists e
 
 ## Limitations and next steps
 
-- **Face embedding.** dlib separates AI-generated faces poorly (AUC 0.86). SFace or ArcFace would be a
-  one-class swap behind `FaceEmbedder`, but neither model could be downloaded in this build environment.
-  Per-identity cohort thresholds are implemented in the eval but don't help until the embedding improves.
-- **Logos.** Keypoint matching tops out around 40% on realistically printed marks. A small learned detector
-  trained on composites from `bench/make_logo_set.py` is the obvious next step.
+- **Faces.** Half of the protected-face swaps still get through at zero false matches, with one enrollment
+  photo per person. Multi-photo enrollment (the API already accepts several) and a larger ArcFace model are the
+  next levers. Existing 128-d enrollments from v1 must be re-enrolled (migration 002 keeps them but the matcher
+  skips them).
+- **Logos.** Keypoint matching is near its ceiling on small, low-texture marks. A small learned detector trained
+  on composites from `bench/make_logo_set.py` is the obvious next step.
+- **The live run and the load test** were recorded with the v1 face model and before API keys existed.
 - **NSFW recall** needs a licensed labeled set, which is out of scope for a public repo. Image-side CSAM needs
   hash matching (PhotoDNA / NCMEC), which is also out of scope. Here, minors are handled at the prompt.
-- The prompt model's training data is synthetic. The review queue's corrected labels are the intended way to
-  replace it with real traffic.
+- The prompt model's training data is synthetic. The retraining loop is how real traffic would replace it.
 
 Data credits: MS-COCO captions (CC BY 4.0), NudeNet (AGPL-3.0 model weights, loaded at runtime from the `nudenet`
-package), dlib models (public domain / CC0), OpenCV res10 face detector.
+package), dlib models (public domain / CC0), OpenCV res10, YuNet and SFace models (OpenCV model zoo, Apache-2.0 / MIT).
